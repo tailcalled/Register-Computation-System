@@ -6,7 +6,7 @@ fn main() {
     let mut config = Config::new();
 
     let clock = config.dummy_gate();
-    config.modify_pins(clock, clock.negate(), clock.negate());
+    config.modify_or_pins(clock, clock.negate(), clock.negate());
 
     let mut state1 = config.empty_state();
     let mut state2 = config.empty_state();

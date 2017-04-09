@@ -1,4 +1,5 @@
 use std::fmt;
+mod gate;
 
 struct Gate {
     in1: usize,
@@ -47,7 +48,10 @@ impl Config {
         });
         Pin(self.config.len(), false)
     }
-    pub fn modify_pins(&mut self, gate: Pin, p1: Pin, p2: Pin) {
+    pub fn nor(&mut self, p1: Pin, p2: Pin) -> Pin {
+        self.or(p1,p2).negate()
+    }
+    pub fn modify_or_pins(&mut self, gate: Pin, p1: Pin, p2: Pin) {
         self.config[gate.config_index()] = Gate {
             in1: p1.0,
             negate1: p1.1,
@@ -56,12 +60,12 @@ impl Config {
         };
     }
     pub fn dummy_gate(&mut self) -> Pin {
-        let p1 = self.true_pin();
+        let p1 = self.false_pin();
         let p2 = self.false_pin();
         self.or(p1, p2)
     }
     pub fn set_dummy_value(&mut self, pin: Pin, value: bool) {
-        self.modify_pins(pin, Pin(0, value), Pin(0, value));
+        self.modify_or_pins(pin, Pin(0, value), Pin(0, value));
     }
 }
 impl Pin {
@@ -95,3 +99,4 @@ impl fmt::Debug for Config {
         write!(f, "{:?}", self.config)
     }
 }
+
