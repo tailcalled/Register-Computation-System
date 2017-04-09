@@ -1,6 +1,9 @@
 *.class
 *.log
 
+# Rust
+logic/target
+
 # sbt specific
 .cache
 .history
