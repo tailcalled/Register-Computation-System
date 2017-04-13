@@ -1,5 +1,7 @@
 use std::fmt;
-mod gate;
+pub mod gate;
+pub mod binary;
+pub mod adder;
 
 struct Gate {
     in1: usize,

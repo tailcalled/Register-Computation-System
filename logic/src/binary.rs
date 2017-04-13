@@ -1,65 +1,59 @@
 use {Pin, Config};
-use gate::{AndGate, XorGate};
+//use gate::AndGate;
+use adder::{HalfAdder, FullAdder};
 
-struct BinaryPin {
-    pins: Vec<Pin>
+#[derive(Clone)]
+pub struct BinaryPin {
+    pub pins: Vec<Pin>
 }
 
 impl BinaryPin {
-    fn wrap(pins: Vec<Pin>) -> BinaryPin {
+    pub fn wrap(pins: Vec<Pin>) -> BinaryPin {
         BinaryPin {
             pins: pins
         }
     }
-    fn size(&self) -> usize {
+    pub fn size(&self) -> usize {
         self.pins.len()
     }
 }
 
-struct HalfAdder {
-    low: XorGate,
-    high: AndGate
+pub struct BinaryAdder {
+    output: BinaryPin
 }
-impl HalfAdder {
-    fn create(config: &mut Config, p1: Pin, p2: Pin) -> HalfAdder {
-        let low = config.xor(p1, p2);
-        let high = config.and(p1, p2);
-        HalfAdder {
-            low: low, high: high
+impl BinaryAdder {
+    pub fn create(config: &mut Config, n1: &BinaryPin, n2: &BinaryPin) -> BinaryAdder {
+        if n1.size() == 0 { return BinaryAdder { output: n2.clone() }; }
+        if n2.size() == 0 { return BinaryAdder { output: n1.clone() }; }
+        let mut iter = n1.pins.iter().zip(n2.pins.iter());
+        let mut out = Vec::new();
+        if let Some((a, b)) = iter.next() {
+            let ha = HalfAdder::create(config, *a, *b);
+            out.push(ha.low());
+            let mut carry = ha.high();
+            for (x, y) in iter {
+                let fa = FullAdder::create(config, *x, *y, carry);
+                carry = fa.carry();
+                out.push(fa.sum());
+            }
+            let skip = if n1.size() > n2.size() {
+                n1.pins.iter().skip(n2.size())
+            } else {
+                n2.pins.iter().skip(n1.size())
+            };
+            for pin in skip {
+                let ha = HalfAdder::create(config, *pin, carry);
+                carry = ha.high();
+                out.push(ha.low());
+            }
+            out.push(carry);
         }
+        BinaryAdder { output: BinaryPin::wrap(out) }
     }
-    fn modify_pins(&self, config: &mut config, p1: Pin, p2: Pin) {
-        config.modify_xor_pins(self.low, p1, p2);
-        config.modify_and_pins(self.high, p1, p2);
-    }
-    fn low(&self) -> Pin {
-        self.low.pin()
-    }
-    fn high(&self) -> Pin {
-        self.high.pin()
+    pub fn pins(&self) -> &BinaryPin {
+        &self.output
     }
 }
 
-struct FullAdder {
-    low: HalfAdder
-}
-impl FullAdder {
-    fn create(config: &mut Config, p1: Pin, p2: Pin, p3: Pin) -> HalfAdder {
-        let low = config.xor(p1, p2);
-        let high = config.and(p1, p2);
-        HalfAdder {
-            low: low, high: high
-        }
-    }
-    fn modify_pins(&self, config: &mut config, p1: Pin, p2: Pin) {
-        config.modify_xor_pins(self.low, p1, p2);
-        config.modify_and_pins(self.high, p1, p2);
-    }
-    fn low(&self) -> Pin {
-        self.low.pin()
-    }
-    fn high(&self) -> Pin {
-        self.high.pin()
-    }
-}
+
 
