@@ -26,7 +26,7 @@ impl BinaryAdder {
         if n1.size() == 0 { return BinaryAdder { output: n2.clone() }; }
         if n2.size() == 0 { return BinaryAdder { output: n1.clone() }; }
         let mut iter = n1.pins.iter().zip(n2.pins.iter());
-        let mut out = Vec::new();
+        let mut out = Vec::with_capacity(if n1.size() > n2.size() { n1.size() + 1 } else { n2.size() + 1 });
         if let Some((a, b)) = iter.next() {
             let ha = HalfAdder::create(config, *a, *b);
             out.push(ha.low());
