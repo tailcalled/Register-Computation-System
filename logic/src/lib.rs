@@ -32,6 +32,18 @@ impl Config {
                  | (state.state[gate.in2] ^ gate.negate2);
         }
     }
+    pub fn step_check_changes(&self, state: &State, store: &mut State) -> bool {
+        store.state[0] = false;
+        let mut changed = false;
+        for (gate, out) in self.config.iter().zip(store.state.iter_mut().skip(1)) {
+            let prev_out = *out;
+            let result = (state.state[gate.in1] ^ gate.negate1)
+                       | (state.state[gate.in2] ^ gate.negate2);
+            if prev_out != result { changed = true; }
+            *out = result;
+        }
+        changed
+    }
     pub fn empty_state(&self) -> State {
         State { state: vec![false; self.config.len() + 1] }
     }

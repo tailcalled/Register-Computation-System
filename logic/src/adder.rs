@@ -116,6 +116,7 @@ mod tests {
         config.step(&state1, &mut state2);
         config.step(&state2, &mut state1);
         config.step(&state1, &mut state2);
+        assert_eq!(config.step_check_changes(&state2, &mut state1), false);
 
         let mut res = 0;
         if state2.read(ha.low()) { res += 1; }
@@ -149,6 +150,8 @@ mod tests {
         config.step(&state1, &mut state2);
         config.step(&state2, &mut state1);
         config.step(&state1, &mut state2);
+        config.step(&state2, &mut state1);
+        assert_eq!(config.step_check_changes(&state1, &mut state2), false);
 
         let mut res = 0;
         if state2.read(fa.sum()) { res += 1; }
